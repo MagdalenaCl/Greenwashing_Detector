@@ -1,2 +1,7 @@
 pdfplumber
 spacy
+PyMuPDF 
+keybert 
+sentence-transformers 
+bertopic
+numpy==1.26.0
