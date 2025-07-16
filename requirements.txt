@@ -5,3 +5,6 @@ keybert
 sentence-transformers 
 bertopic
 numpy==1.26.0
+sentencepiece
+torch==2.6.0
+"lxml[html_clean]"
