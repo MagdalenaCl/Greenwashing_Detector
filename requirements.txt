@@ -11,3 +11,7 @@ lxml[html_clean]
 transformers
 streamlit
 ftfy
+playwright
+ddgs
+matplotlib
+seaborn
