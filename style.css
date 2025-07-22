@@ -1,0 +1,54 @@
+/* Header-Leiste */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #c8e6c9;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.header-left h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: #2e7d32;
+}
+.header-right img {
+    height: 60px;
+    width: auto;
+}
+
+.dash-subheader {
+    color: #4caf50;
+    font-weight: bold;
+    text-align: right;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+/* Allgemeines Layout */
+body {
+    background-color: #f4fdf7;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+h1, h2, h3, h4 {
+    color: #2e7d32;
+}
+
+/* Kartenhintergrund */
+.stExpander {
+    background-color: #e8f5e9 !important;
+    border-radius: 8px !important;
+}
+
+/* Buttons */
+button {
+    background-color: #43a047 !important;
+    color: white !important;
+}
+
+button:hover {
+    background-color: #2e7d32 !important;
+} 
