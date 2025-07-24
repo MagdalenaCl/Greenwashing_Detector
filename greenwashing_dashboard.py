@@ -3,9 +3,29 @@ import pandas as pd
 import plotly.express as px
 import json
 import base64
+import os
+import glob
 
 # --- Daten laden ---
-df = pd.read_csv("greenwashing_classification.csv")
+classification_folder = "results_classification"
+all_csv_files = glob.glob(os.path.join(classification_folder, "*.csv"))
+
+dfs = []
+for file in all_csv_files:
+    try:
+        df = pd.read_csv(file)
+        dfs.append(df)
+    except Exception as e:
+        print(f"Fehler beim Laden von {file}: {e}")
+
+if not dfs:
+    st.error("Keine Klassifikationsdaten gefunden.")
+    st.stop()
+
+df = pd.concat(dfs, ignore_index=True)
+df["year"] = df["year"].astype(str)
+
+# --- Ähnliche Sätze laden ---
 with open("similarity_data.json", "r", encoding="utf-8") as f:
     similarity_data = json.load(f)
 
@@ -32,28 +52,40 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# --- Semantischer Vergleich ---
-st.markdown("### Semantischer Vergleich: Bericht vs. Presseartikel")
-artikel_sätze = [item["artikel_chunk"][:100] + "…" for item in similarity_data]
-auswahl = st.selectbox("Presseartikel-Satz auswählen", options=list(enumerate(artikel_sätze)), format_func=lambda x: x[1])
-index = auswahl[0]
-ausgewählter = similarity_data[index]
+# --- Filter: Unternehmen und Jahr ---
+st.sidebar.markdown("### Filter")
+selected_company = st.sidebar.selectbox("Unternehmen auswählen", sorted(df["company"].unique()))
+available_years = df[df["company"] == selected_company]["year"].unique()
+selected_year = st.sidebar.selectbox("Jahr auswählen", sorted(available_years))
 
-col1, col2 = st.columns(2)
-with col1:
-    st.markdown(f"**Presseartikel:**\n\n{ausgewählter['artikel_chunk']}")
-with col2:
-    st.markdown("**Top ähnliche Passagen im Bericht:**")
-    for match in ausgewählter["top_matches"]:
-        st.markdown(f"> **Score:** {match['similarity']:.2f}")
-        st.markdown(match["bericht_text"])
-        st.markdown("---")
+df_filtered = df[(df["company"] == selected_company) & (df["year"] == selected_year)]
+
+# --- Bewertung ---
+evaluation_path = f"results_chatgpt/comparison_{selected_company.replace(' ', '')}_{selected_year}.csv"
+
+if os.path.exists(evaluation_path):
+    st.markdown(f"### Bewertung der Nachhaltigkeitsversprechen ({selected_company}, {selected_year})")
+    evaluation_df = pd.read_csv(evaluation_path, sep=';', index_col=0)
+    evaluation_df.columns = evaluation_df.columns.str.strip()
+
+    def traffic_light_color(ampel):
+        return {
+            "🟢": "background-color: #c8e6c9",
+            "🟡": "background-color: #fff9c4",
+            "🔴": "background-color: #ffcdd2"
+        }.get(ampel, "")
+
+    styled = evaluation_df.style.applymap(traffic_light_color, subset=["Ampel"])
+    st.dataframe(styled, use_container_width=True)
+else:
+    st.info(f"ℹ️ Für {selected_company} im Jahr {selected_year} liegt noch keine Bewertungstabelle vor.")
+
 
 st.divider()
 
 # --- KPI Verteilung ---
-st.markdown("### Verteilung der Klassifikationen")
-label_counts = df["label"].value_counts().reset_index()
+st.markdown(f"### Verteilung der Klassifikationen ({selected_company}, {selected_year})")
+label_counts = df_filtered["label"].value_counts().reset_index()
 label_counts.columns = ["Label", "Anzahl"]
 farben = ["#81c784", "#ffd54f", "#ffb74d", "#e57373"]
 
@@ -76,15 +108,15 @@ col1, col2 = st.columns([1, 3])
 with col1:
     min_score = st.slider("Mindest-Sicherheit", 0.0, 1.0, 0.6, 0.01)
 with col2:
-    selected_label = st.selectbox("Kategorie", ["Alle"] + sorted(df["label"].unique()))
+    selected_label = st.selectbox("Kategorie", ["Alle"] + sorted(df_filtered["label"].unique()))
 
-filtered_df = df[df["score"] >= min_score]
+explorer_df = df_filtered[df_filtered["score"] >= min_score]
 if selected_label != "Alle":
-    filtered_df = filtered_df[filtered_df["label"] == selected_label]
+    explorer_df = explorer_df[explorer_df["label"] == selected_label]
 
-st.success(f"{len(filtered_df)} passende Aussagen gefunden")
+st.success(f"{len(explorer_df)} passende Aussagen gefunden")
 
-for i, row in filtered_df.head(20).iterrows():
+for i, row in explorer_df.head(20).iterrows():
     with st.expander(f"{row['label'].capitalize()} – Score: {row['score']:.2f}"):
         st.write(row["text"])
 
@@ -92,18 +124,20 @@ st.divider()
 
 # --- Score Verteilung ---
 st.markdown("### Score-Verteilung")
-fig_hist = px.histogram(df, x="score", nbins=20, color="label",
+fig_hist = px.histogram(df_filtered, x="score", nbins=20, color="label",
                         color_discrete_sequence=farben)
 st.plotly_chart(fig_hist, use_container_width=True)
 
 st.divider()
 
 # --- Export ---
-st.markdown("### Export")
-csv = filtered_df.to_csv(index=False).encode("utf-8")
+st.markdown(f"### Export ({selected_company}, {selected_year})")
+csv = explorer_df.to_csv(index=False).encode("utf-8")
+csv_filename = f"{selected_company}_{selected_year}_gefiltert.csv".replace(" ", "_")
+
 st.download_button(
     label="CSV herunterladen",
     data=csv,
-    file_name="greenwashing_gefiltert.csv",
+    file_name=csv_filename,
     mime="text/csv"
 )
