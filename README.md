@@ -26,7 +26,7 @@ Das Projekt nutzt zwei Ansätze:
 ## Ergebnispräsentation
 Die gewonnenen Ergebnisse werden in einem interaktiven Dashboard visualisiert, das mit Streamlit umgesetzt wurde. Nutzer können Unternehmen und Jahr filtern, um Vergleichsdiagramme und Bewertungen einzusehen. Das Dashboard zeigt KPI-Verteilungen als Kreis- und Balkendiagramme sowie eine interaktive Exploration der einzelnen Aussagen basierend auf deren Sicherheits-Score. Zudem sind eine Score-Verteilung und der Export der gefilterten Daten als CSV-Datei möglich.
 
-![Dashboard Screenshot](images\Screenshot_Dashboard_Alle.png)
+![Dashboard Screenshot](images/Screenshot_Dashboard_Alle.png)
 
 # Voraussetzungen und Installation
 Um das Projekt lokal auszuführen, empfiehlt es sich, eine virtuelle Umgebung zu erstellen: python -m venv venv
