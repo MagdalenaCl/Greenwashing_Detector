@@ -1,4 +1,6 @@
-![Greenwashing Detector](images/Greenwashing_Detector_Logo.png)
+<p align="center">
+  <img src="images/Greenwashing_Detector_Logo.png" alt="Greenwashing Detector Logo" width="150"/>
+</p>
 
 # Greenwashing Detector
 
