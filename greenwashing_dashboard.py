@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import json
 import base64
 import os
 import glob
@@ -24,10 +23,6 @@ if not dfs:
 
 df = pd.concat(dfs, ignore_index=True)
 df["year"] = df["year"].astype(str)
-
-# --- Ähnliche Sätze laden ---
-with open("similarity_data.json", "r", encoding="utf-8") as f:
-    similarity_data = json.load(f)
 
 # --- Page Setup ---
 st.set_page_config(layout="wide", page_title="Greenwashing Dashboard", initial_sidebar_state="collapsed")
@@ -54,34 +49,50 @@ st.markdown(f"""
 
 # --- Filter: Unternehmen und Jahr ---
 st.sidebar.markdown("### Filter")
-selected_company = st.sidebar.selectbox("Unternehmen auswählen", sorted(df["company"].unique()))
-available_years = df[df["company"] == selected_company]["year"].unique()
+companies = sorted(df["company"].unique())
+selected_company = st.sidebar.selectbox("Unternehmen auswählen", ["Alle"] + companies)
+available_years = df["year"].unique() if selected_company == "Alle" else df[df["company"] == selected_company]["year"].unique()
 selected_year = st.sidebar.selectbox("Jahr auswählen", sorted(available_years))
 
-df_filtered = df[(df["company"] == selected_company) & (df["year"] == selected_year)]
-
-# --- Bewertung ---
-evaluation_path = f"results_chatgpt/comparison_{selected_company.replace(' ', '')}_{selected_year}.csv"
-
-if os.path.exists(evaluation_path):
-    st.markdown(f"### Bewertung der Nachhaltigkeitsversprechen ({selected_company}, {selected_year})")
-    evaluation_df = pd.read_csv(evaluation_path, sep=';', index_col=0)
-    evaluation_df.columns = evaluation_df.columns.str.strip()
-
-    def traffic_light_color(ampel):
-        return {
-            "🟢": "background-color: #c8e6c9",
-            "🟡": "background-color: #fff9c4",
-            "🔴": "background-color: #ffcdd2"
-        }.get(ampel, "")
-
-    styled = evaluation_df.style.applymap(traffic_light_color, subset=["Ampel"])
-    st.dataframe(styled, use_container_width=True)
+# --- Filter anwenden ---
+if selected_company == "Alle":
+    df_filtered = df[df["year"] == selected_year]
 else:
-    st.info(f"ℹ️ Für {selected_company} im Jahr {selected_year} liegt noch keine Bewertungstabelle vor.")
+    df_filtered = df[(df["company"] == selected_company) & (df["year"] == selected_year)]
 
+farben = ["#81c784", "#ffd54f", "#ffb74d", "#e57373"]
 
-st.divider()
+# --- Wenn "Alle": Nur Vergleichsdiagramm anzeigen ---
+if selected_company == "Alle":
+    st.markdown(f"### Vergleich der Klassifikationen (alle Unternehmen, {selected_year})")
+    label_counts = df_filtered.groupby("company")["label"].value_counts().unstack().fillna(0)
+
+    fig = px.bar(label_counts, barmode="group", text_auto=True, color_discrete_sequence=farben)
+    fig.update_layout(xaxis_title="Unternehmen", yaxis_title="Anzahl", legend_title="Label")
+    st.plotly_chart(fig, use_container_width=True)
+
+else:
+    # --- Bewertungstabelle ---
+    evaluation_path = f"results_chatgpt/comparison_{selected_company.replace(' ', '')}_{selected_year}.csv"
+
+    if os.path.exists(evaluation_path):
+        st.markdown(f"### Bewertung der Nachhaltigkeitsversprechen ({selected_company}, {selected_year})")
+        evaluation_df = pd.read_csv(evaluation_path, sep=';', index_col=0)
+        evaluation_df.columns = evaluation_df.columns.str.strip()
+
+        def traffic_light_color(ampel):
+            return {
+                "🟢": "background-color: #c8e6c9",
+                "🟡": "background-color: #fff9c4",
+                "🔴": "background-color: #ffcdd2"
+            }.get(ampel, "")
+
+        styled = evaluation_df.style.map(traffic_light_color, subset=["Ampel"])
+        st.dataframe(styled, use_container_width=True)
+    else:
+        st.info(f"ℹ️ Für {selected_company} im Jahr {selected_year} liegt noch keine Bewertungstabelle vor.")
+
+    st.divider()
 
 # --- KPI Verteilung ---
 st.markdown(f"### Verteilung der Klassifikationen ({selected_company}, {selected_year})")
