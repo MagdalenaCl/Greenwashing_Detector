@@ -1,4 +1,5 @@
-![Greenwashing Detector](images\Greenwashing_Detector_Logo.png)
+![Greenwashing Detector](images/Greenwashing_Detector_Logo.png)
+
 # Greenwashing Detector
 
 ## Projektübersicht
