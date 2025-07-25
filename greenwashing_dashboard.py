@@ -34,7 +34,7 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-logo_base64 = get_base64_of_bin_file("Greenwashing_Detector_Logo.png")
+logo_base64 = get_base64_of_bin_file("images\Greenwashing_Detector_Logo.png")
 
 st.markdown(f"""
 <div class="header">
