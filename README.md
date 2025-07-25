@@ -1,14 +1,28 @@
 # Greenwashing Detector
 
-Dieses Projekt hat das Ziel, Nachhaltigkeitsversprechen von Unternehmen aus der Automobilbranche systematisch zu analysieren. Dabei werden zwei unterschiedliche Ansätze verfolgt:
+## Projektübersicht
 
-1. Vergleich der Nachhaltigkeitsversprechen mit externen Presseartikeln, um Übereinstimmungen oder Widersprüche zu identifizieren.
+Der Greenwashing Detector ist ein datengetriebenes Analyse-Tool, das Nachhaltigkeitsversprechen von Unternehmen der Automobilbranche systematisch untersucht. Ziel ist es, Transparenz über die tatsächliche Umsetzung und Glaubwürdigkeit von Nachhaltigkeitsmaßnahmen zu schaffen und potenzielles Greenwashing aufzudecken.
 
-2. Klassifizierung der Nachhaltigkeitsversprechen, um deren Qualität und Verbindlichkeit zu bewerten.
+Das Projekt kombiniert modernste KI-Technologien mit umfassender Textanalyse, um Nachhaltigkeitsberichte und weitere Unternehmensdokumente auf relevante Versprechen zu durchleuchten, diese zu klassifizieren und mit externen unabhängigen Quellen abzugleichen.
 
-Die gewonnenen Erkenntnisse werden in einem interaktiven Dashboard visualisiert, das es Anwender:innen ermöglicht, die Daten übersichtlich einzusehen und interaktiv zu analysieren.
+## Vorgehensweise
 
-Für die Extraktion der Nachhaltigkeitsversprechen wird ein Large Language Model (LLM) eingesetzt. Der semantische Vergleich erfolgt mithilfe eines BERT-Modells. Die Visualisierung des Dashboards wurde mit Streamlit umgesetzt.
+Das Projekt nutzt zwei Ansätze:
+
+1. Extraktion und Analyse von Nachhaltigkeitsversprechen
+    - Einsatz eines Large Language Models (LLM), um aus PDFs mit Nachhaltigkeitsberichten alle konkreten Nachhaltigkeitsversprechen zu extrahieren.
+    - Sorgfältige Textvorverarbeitung (Reinigung, Satzsegmentierung, Chunking), um die Qualität der Modellinputs sicherzustellen.
+    - Deduplizierung und neutrale Umformulierung der extrahierten Versprechen.
+
+2. Bewertung und Klassifikation der Versprechen
+    - Anwendung eines BERT-basierten Zero-Shot-Classifier-Modells zur Einordnung der Aussagen in Kategorien wie „konkrete Maßnahme“, „vage Behauptung“ oder „fragwürdige Nachhaltigkeitsaussage“.
+    - Zusätzlich wird eine kritische Überprüfung der Erfüllung der Versprechen anhand unabhängiger, externer Quellen vorgenommen. Dabei werden der aktuelle Status, Realisierbarkeit und eine Ampelbewertung (grün/gelb/rot) vergeben.
+
+## Ergebnispräsentation
+Die gewonnenen Ergebnisse werden in einem interaktiven Dashboard visualisiert, das mit Streamlit umgesetzt wurde. Nutzer können Unternehmen und Jahr filtern, um Vergleichsdiagramme und Bewertungen einzusehen. Das Dashboard zeigt KPI-Verteilungen als Kreis- und Balkendiagramme sowie eine interaktive Exploration der einzelnen Aussagen basierend auf deren Sicherheits-Score. Zudem sind eine Score-Verteilung und der Export der gefilterten Daten als CSV-Datei möglich.
+
+![Dashboard Screenshot] (Screenshot_Dashboard_Alle.png)
 
 # Voraussetzungen und Installation
 Um das Projekt lokal auszuführen, empfiehlt es sich, eine virtuelle Umgebung zu erstellen: python -m venv venv
